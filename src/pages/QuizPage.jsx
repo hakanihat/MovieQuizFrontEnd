@@ -27,12 +27,12 @@ function QuizPage() {
   const [results, setResults] = useState(null);
 
   // --- TIMER & MODAL STATE ---
-  const [startTime, setStartTime] = useState(null); // Null until user clicks "Start"
+  const [startTime, setStartTime] = useState(null); 
   const [currentTime, setCurrentTime] = useState(0);
   const [totalPausedTime, setTotalPausedTime] = useState(0);
   
   const [showExitModal, setShowExitModal] = useState(false);
-  const [showStartModal, setShowStartModal] = useState(false); // NEW: Start Modal
+  const [showStartModal, setShowStartModal] = useState(false); 
 
   const [selectedChoiceIndex, setSelectedChoiceIndex] = useState(null);
   const [isAnswerProcessed, setIsAnswerProcessed] = useState(false);
@@ -59,7 +59,6 @@ function QuizPage() {
   // --- 1. ABANDONMENT HANDLER ---
   useEffect(() => {
     const handleBeforeUnload = (e) => {
-      // Only warn if the quiz has STARTED (startTime exists)
       if (startTimeRef.current && !quizFinishedRef.current && !alreadyTakenRef.current) {
         e.preventDefault();
         e.returnValue = ''; 
@@ -69,11 +68,7 @@ function QuizPage() {
 
     return () => {
       window.removeEventListener("beforeunload", handleBeforeUnload);
-
-      // Only submit if quiz STARTED, wasn't finished, and wasn't already taken
       if (startTimeRef.current && !quizFinishedRef.current && !alreadyTakenRef.current) {
-        console.log("User abandoned active quiz. Submitting partial results...");
-        
         const now = Date.now();
         const start = startTimeRef.current;
         const paused = totalPausedTimeRef.current || 0;
@@ -112,7 +107,6 @@ function QuizPage() {
 
         if (quizRes.status === "fulfilled" && quizRes.value.data && quizRes.value.data.length > 0) {
           setQuestions(quizRes.value.data);
-          // NEW: Don't start timer yet. Show the Start Modal.
           setShowStartModal(true); 
         } else {
           if (quizRes.status === "rejected" && quizRes.reason.response?.status === 403) {
@@ -132,7 +126,6 @@ function QuizPage() {
 
   // --- 3. TIMER ---
   useEffect(() => {
-    // Only run if startTime is set (User clicked Start)
     if (!startTime || submitting || alreadyTaken || quizFinished || isAnswerProcessed || showExitModal || showStartModal) return;
 
     const timerId = setInterval(() => {
@@ -145,14 +138,11 @@ function QuizPage() {
   }, [startTime, submitting, alreadyTaken, quizFinished, isAnswerProcessed, totalPausedTime, showExitModal, showStartModal]);
 
   // --- 4. MODAL HANDLERS ---
-  
-  // A. Start Quiz Handler
   const handleStartQuiz = () => {
     setShowStartModal(false);
-    setStartTime(Date.now()); // START THE TIMER NOW
+    setStartTime(Date.now()); 
   };
 
-  // B. Exit Handlers
   const handleExitClick = () => {
     pauseStartTimeRef.current = Date.now();
     setShowExitModal(true);
@@ -232,10 +222,15 @@ function QuizPage() {
     }
   }
 
+  // --- 7. BUTTON CLASS LOGIC ---
+  // We ensure the logic only returns "correct" or "wrong" if isAnswerProcessed is TRUE
   const getButtonClass = (index, correctIndex) => {
     if (!isAnswerProcessed) return "choice-btn"; 
+    
+    // Feedback is ONLY revealed after the user clicks
     if (index === correctIndex) return "choice-btn correct";
     if (index === selectedChoiceIndex && index !== correctIndex) return "choice-btn wrong";
+    
     return "choice-btn dimmed";
   };
 
@@ -311,14 +306,12 @@ function QuizPage() {
   return (
     <div className="quiz-page-container" style={backgroundStyle}>
       
-      {/* --- START QUIZ MODAL --- */}
       {showStartModal && (
         <div className="quiz-modal-overlay">
           <div className="quiz-modal-content">
             <h3>Ready to Start?</h3>
             <p>Once you start, leaving the page will count as an attempt and your score will be submitted.</p>
             <div className="quiz-modal-actions">
-               {/* If they don't want to start, they can go back */}
                <button className="secondary-btn" onClick={() => navigate(-1)}>Cancel</button>
                <button className="modal-start-btn" onClick={handleStartQuiz}>Start Quiz</button>
             </div>
@@ -326,7 +319,6 @@ function QuizPage() {
         </div>
       )}
 
-      {/* --- EXIT CONFIRMATION MODAL --- */}
       {showExitModal && (
         <div className="quiz-modal-overlay">
           <div className="quiz-modal-content">
@@ -348,7 +340,6 @@ function QuizPage() {
           </div>
           <div style={{display: 'flex', alignItems: 'center'}}>
             <div className="timer-badge">⏱️ {currentTime}s</div>
-            {/* EXIT BUTTON */}
             <button className="exit-quiz-btn" onClick={handleExitClick} title="Exit Quiz">
               <span className="material-icons">close</span>
             </button>
@@ -364,6 +355,7 @@ function QuizPage() {
                 className={getButtonClass(index, currentQuestion.correctIndex)}
               >
                 {choice}
+                {/* Only show icons after an answer is processed */}
                 {isAnswerProcessed && index === currentQuestion.correctIndex && <span className="material-icons">check_circle</span>}
                 {isAnswerProcessed && index === selectedChoiceIndex && index !== currentQuestion.correctIndex && <span className="material-icons">cancel</span>}
               </button>
