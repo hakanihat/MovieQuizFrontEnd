@@ -1,60 +1,65 @@
-// src/pages/RegistrationPage.jsx
 import React, { useState } from 'react';
 import apiClient from '../api/apiService';
-import { useNavigate } from 'react-router-dom';
-import { toast } from 'react-toastify';
+import { useNavigate, Link } from 'react-router-dom';
 import './RegistrationPage.css';
 
 const RegistrationPage = () => {
   const [form, setForm] = useState({ username: '', email: '', password: '' });
-  // Initialize error as null so we can check it easily
+  
+  // UI States
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(null); // New success state
+
   const navigate = useNavigate();
 
-  const handleChange = (e) =>
+  const handleChange = (e) => {
+    if (error) setError(null);
     setForm({ ...form, [e.target.name]: e.target.value });
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError(null); // Clear previous errors
+    
+    // 1. Prevent Spam
+    if (isLoading) return;
+
+    // 2. Start Loading
+    setError(null);
+    setSuccess(null);
+    setIsLoading(true);
     
     try {
       await apiClient.post('/users/register', form);
       
-      // ✅ SUCCESS: Notify user
-      toast.success('Registration successful! Please login.');
-      navigate('/login'); 
+      // 3. Show Success Message
+      setSuccess("Registration successful! Redirecting to login...");
+      
+      // Short delay so user can read the message before redirect
+      setTimeout(() => {
+        navigate('/login');
+      }, 1500);
+
     } catch (err) {
       console.error("Registration Error:", err);
       
-      // 🛡️ SAFETY LOGIC: Extract the string message safely
+      // 4. Safe Error Extraction
       let errorMessage = 'Registration failed. Please try again.';
-      
       if (err.response && err.response.data) {
         const { message } = err.response.data;
-        
-        // Scenario 1: Backend sends a simple string message
-        if (typeof message === 'string') {
+        if (Array.isArray(message)) {
+          errorMessage = message.join(', ');
+        } else if (typeof message === 'string') {
           errorMessage = message;
-        } 
-        // Scenario 2: Backend sends an array of messages (common in NestJS validation)
-        else if (Array.isArray(message)) {
-          errorMessage = message[0];
-        }
-        // Scenario 3: Fallback if the whole data is the error
-        else if (typeof err.response.data === 'string') {
+        } else if (typeof err.response.data === 'string') {
            errorMessage = err.response.data;
         }
       }
 
-      // 🛑 FINAL CHECK: Ensure errorMessage is strictly a string
-      if (typeof errorMessage !== 'string') {
-        errorMessage = "An unexpected error occurred.";
-      }
-
-      // Now it is safe to set state
       setError(errorMessage);
-      toast.error(errorMessage);
+    } finally {
+      // 5. Unlock button (unless success, then we redirecting anyway)
+      if (!success) setIsLoading(false);
     }
   };
 
@@ -63,36 +68,85 @@ const RegistrationPage = () => {
       <div className="register-card">
         <h2>Register</h2>
         
-        {/* Only render if error exists and is a string */}
-        {error && <p className="error">{error}</p>}
+        {/* INLINE ERROR */}
+        {error && (
+          <div style={{ 
+            backgroundColor: '#ffebee', 
+            color: '#c62828', 
+            padding: '10px', 
+            borderRadius: '4px', 
+            marginBottom: '15px', 
+            fontSize: '0.9rem',
+            border: '1px solid #ef9a9a'
+          }}>
+            {error}
+          </div>
+        )}
+
+        {/* INLINE SUCCESS */}
+        {success && (
+          <div style={{ 
+            backgroundColor: '#e8f5e9', 
+            color: '#2e7d32', 
+            padding: '10px', 
+            borderRadius: '4px', 
+            marginBottom: '15px', 
+            fontSize: '0.9rem',
+            border: '1px solid #a5d6a7'
+          }}>
+            {success}
+          </div>
+        )}
         
         <form onSubmit={handleSubmit}>
-          <input
-            type="text"
-            name="username"
-            placeholder="Username"
-            value={form.username}
-            onChange={handleChange}
-            required
-          />
-          <input
-            type="email"
-            name="email"
-            placeholder="Email"
-            value={form.email}
-            onChange={handleChange}
-            required
-          />
-          <input
-            type="password"
-            name="password"
-            placeholder="Password"
-            value={form.password}
-            onChange={handleChange}
-            required
-          />
-          <button type="submit">Register</button>
+          <div className="form-group">
+            <input
+              type="text"
+              name="username"
+              placeholder="Username"
+              value={form.username}
+              onChange={handleChange}
+              required
+              disabled={isLoading}
+            />
+          </div>
+
+          <div className="form-group">
+            <input
+              type="email"
+              name="email"
+              placeholder="Email"
+              value={form.email}
+              onChange={handleChange}
+              required
+              disabled={isLoading}
+            />
+          </div>
+
+          <div className="form-group">
+            <input
+              type="password"
+              name="password"
+              placeholder="Password"
+              value={form.password}
+              onChange={handleChange}
+              required
+              disabled={isLoading}
+            />
+          </div>
+
+          <button 
+            type="submit" 
+            disabled={isLoading || success} 
+            style={{ opacity: isLoading ? 0.7 : 1, cursor: isLoading ? 'not-allowed' : 'pointer' }}
+          >
+            {isLoading ? 'Registering...' : 'Register'}
+          </button>
         </form>
+
+        <p className="register-link" style={{ marginTop: '15px', fontSize: '0.9rem', color: '#ccc' }}>
+          Already have an account? <Link to="/login" style={{ color: '#f1c40f' }}>Login here</Link>
+        </p>
       </div>
     </div>
   );
