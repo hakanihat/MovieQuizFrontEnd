@@ -1,0 +1,387 @@
+/* src/pages/Home.css */
+
+/* --- 1. STICKY HEADER (If used) --- */
+.sticky-header {
+  position: sticky;
+  top: 71px; /* 70px header + 1px border */
+  z-index: 900;
+  width: 100%;
+  padding: 1rem 2rem;
+  background: rgba(18, 18, 18, 0.95);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  transition: all 0.3s ease;
+}
+
+.header-top-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  max-height: 100px;
+  opacity: 1;
+  transform: translateY(0);
+  margin-bottom: 15px;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+}
+
+.sticky-header.scrolled .header-top-row {
+  max-height: 0;
+  opacity: 0;
+  margin-bottom: 0;
+  transform: translateY(-10px);
+  pointer-events: none;
+}
+
+.search-container {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  flex-shrink: 0;
+}
+
+.sticky-header h2 {
+  margin: 0;
+  font-size: 1.8rem;
+  white-space: nowrap;
+  background: linear-gradient(90deg, #f1c40f, #ffdd59);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 900;
+  letter-spacing: 1px;
+}
+
+.auth-buttons {
+  display: flex;
+  gap: 15px;
+}
+
+.btn-auth {
+  padding: 0.6rem 1.2rem;
+  border-radius: 30px;
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.btn-login {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+.btn-login:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.btn-register {
+  background: linear-gradient(135deg, #f1c40f, #d4ac0d);
+  color: #1a1a1a;
+}
+.btn-register:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(241, 196, 15, 0.4);
+}
+
+/* --- 2. CATEGORY SECTIONS --- */
+.category-section {
+  margin-bottom: 1.5rem;
+  position: relative;
+}
+
+/* UPDATED: Flex container to hold Title Link + Toggle side-by-side */
+.title-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px; /* Space between Title and Toggle */
+  margin-bottom: 15px;
+  position: relative;
+  flex-wrap: wrap; /* Allow wrapping on very small screens */
+}
+
+/* Cinematic CTA Buttons */
+@keyframes borderPulse {
+  0% { border-color: rgba(255, 255, 255, 0.1); box-shadow: 0 0 0 rgba(0,0,0,0); }
+  50% { border-color: rgba(241, 196, 15, 0.5); box-shadow: 0 0 10px rgba(241, 196, 15, 0.1); }
+  100% { border-color: rgba(255, 255, 255, 0.1); box-shadow: 0 0 0 rgba(0,0,0,0); }
+}
+
+@keyframes arrowBounce {
+  0%, 100% { transform: translateX(0) rotate(45deg); }
+  50% { transform: translateX(4px) rotate(45deg); }
+}
+
+.section-title-link {
+  text-decoration: none !important;
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  padding: 10px 28px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 50px;
+  animation: borderPulse 3s infinite ease-in-out;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.section-title-link h2 {
+  font-size: 1.4rem;
+  margin: 0;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  background: linear-gradient(to right, #ffffff, #e0e0e0);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: flex;
+  align-items: center;
+}
+
+.section-title-link .material-icons {
+  font-size: 0;
+  width: 10px;
+  height: 10px;
+  border-top: 3px solid #f1c40f;
+  border-right: 3px solid #f1c40f;
+  transform: rotate(45deg);
+  display: block;
+  animation: arrowBounce 1.5s infinite ease-in-out;
+}
+
+.section-title-link:hover {
+  animation: none;
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(241, 196, 15, 0.8);
+  box-shadow: 0 5px 20px rgba(241, 196, 15, 0.2);
+  transform: translateY(-2px);
+}
+
+.section-title-link:hover .material-icons {
+  animation: none;
+  transform: translateX(6px) rotate(45deg);
+}
+
+.section-title-link:hover h2 {
+  background: linear-gradient(to right, #f1c40f, #ffdd59);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* --- 3. CAROUSEL DEPTH --- */
+.carousel-wrapper {
+  position: relative;
+  background: rgba(0, 0, 0, 0.4);
+  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.9);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  mask-image: linear-gradient(to right, transparent 0%, black 2%, black 98%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 2%, black 98%, transparent 100%);
+  display: flex;
+  align-items: center;
+}
+
+.carousel-wrapper img {
+  height: 360px;
+  width: auto;
+  border-radius: 8px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  display: block;
+}
+
+/* .carousel-wrapper:hover img:hover {
+  transform: scale(1.15) translateY(-5px);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.95);
+  z-index: 20;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 12px;
+} */
+
+/* --- 4. FLOATING SCROLL BUTTON --- */
+.scroll-to-top {
+  position: fixed;
+  bottom: 40px;
+  right: 40px;
+  width: 50px;
+  height: 50px;
+  background: linear-gradient(135deg, #f1c40f, #f39c12);
+  color: #1a1a1a;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(20px) scale(0.8);
+}
+
+.scroll-to-top.visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0) scale(1);
+}
+
+.scroll-to-top:hover {
+  transform: translateY(-5px) scale(1.1);
+  box-shadow: 0 8px 25px rgba(241, 196, 15, 0.6);
+}
+
+/* --- 5. NEW INLINE TOGGLE SWITCH --- */
+
+/* Wrapper for Toggle + Label */
+.quiz-toggle-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 6px 16px;
+  border-radius: 30px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+}
+
+.quiz-toggle-wrapper:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(241, 196, 15, 0.3);
+}
+
+.toggle-label {
+  font-size: 0.85rem;
+  color: #ccc;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  user-select: none;
+}
+
+/* The actual Switch */
+.quiz-toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 40px; /* Compact width */
+  height: 22px; /* Compact height */
+  margin: 0;
+  cursor: pointer;
+}
+
+.quiz-toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #333;
+  transition: .4s;
+  border-radius: 34px;
+  border: 1px solid #555;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 16px;
+  width: 16px;
+  left: 3px;
+  bottom: 2px;
+  background-color: #aaa;
+  transition: .4s;
+  border-radius: 50%;
+}
+
+input:checked + .slider {
+  background-color: rgba(241, 196, 15, 0.2); 
+  border-color: #f1c40f;
+}
+
+input:checked + .slider:before {
+  transform: translateX(18px);
+  background-color: #f1c40f;
+}
+
+.toggle-icon {
+  display: none; /* Icon hidden in this layout for cleanliness */
+}
+
+/* --- MOBILE SPECIFIC FIXES --- */
+@media (max-width: 768px) {
+  .sticky-header {
+    position: sticky !important;
+    top: 125px !important;
+    padding: 0 20px 15px 20px;
+    background: #121212;
+    box-shadow: 0 5px 10px rgba(0,0,0,0.3) !important;
+    border: none !important;
+    display: block;
+    z-index: 900;
+  }
+
+  .sticky-header.scrolled {
+    padding: 0 20px 15px 20px;
+    background: #121212;
+  }
+
+  .header-top-row {
+    max-height: none;
+    opacity: 1;
+    margin-bottom: 15px;
+    pointer-events: auto;
+  }
+
+  .sticky-header.scrolled .header-top-row {
+    max-height: none;
+    opacity: 1;
+    margin-bottom: 15px;
+    transform: none;
+    pointer-events: auto;
+  }
+
+  .sticky-header h2 { font-size: 1.4rem; }
+  .btn-auth { padding: 0.4rem 0.7rem; font-size: 0.75rem; }
+  .auth-buttons { gap: 8px; }
+
+  .carousel-wrapper {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    mask-image: linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%);
+  }
+
+  .carousel-wrapper img {
+    height: 220px;
+  }
+
+  .scroll-to-top { right: 20px; bottom: 30px; width: 45px; height: 45px; }
+  
+  /* Stack title and toggle on small screens */
+  .title-wrapper {
+    gap: 10px;
+  }
+}

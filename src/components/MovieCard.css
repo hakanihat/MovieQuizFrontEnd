@@ -1,0 +1,166 @@
+/* src/components/MovieCard.css */
+
+.movie-card {
+  position: relative;
+  display: block;
+  width: 100%;
+  border-radius: 12px;
+  overflow: hidden;
+  background-color: #1f1f1f;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  aspect-ratio: 2 / 3;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (hover: hover) {
+  .movie-card:hover {
+    box-shadow: 0 12px 20px rgba(0, 0, 0, 0.5);
+  }
+}
+
+.poster-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.movie-poster-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.3s ease;
+}
+
+.gradient-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.2) 0%,
+    transparent 40%,
+    rgba(0, 0, 0, 0.8) 70%,
+    rgba(0, 0, 0, 0.95) 100%
+  );
+  pointer-events: none;
+}
+
+/* --- UPDATED BUTTON POSITIONS --- */
+
+/* Quiz Button (Top Left) */
+.card-quiz-btn {
+  position: absolute;
+  top: 8px;
+  left: 8px; /* Top Left Corner */
+  z-index: 10;
+  
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: rgba(0, 0, 0, 0.7); /* Darker BG for contrast */
+  color: #f1c40f; /* Gold Icon */
+  border: 1px solid rgba(241, 196, 15, 0.3);
+  backdrop-filter: blur(4px);
+}
+
+.card-quiz-btn:hover {
+  background: #f1c40f;
+  color: #000;
+  transform: scale(1.1);
+  box-shadow: 0 0 10px rgba(241, 196, 15, 0.4);
+}
+
+.card-quiz-btn .material-icons {
+  font-size: 18px;
+}
+
+/* Watchlist Button (Top Right) */
+.card-watchlist-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px; /* Top Right Corner */
+  z-index: 10;
+
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  color: #fff;
+}
+
+.card-watchlist-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: scale(1.1);
+}
+
+.card-watchlist-btn.active {
+  background: #f1c40f;
+  color: #000;
+}
+
+.card-watchlist-btn .material-icons {
+  font-size: 18px;
+}
+
+/* --- MOVIE INFO --- */
+.movie-info {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  padding: 10px 12px;
+  z-index: 5;
+  pointer-events: none;
+}
+
+.movie-title {
+  margin: 0;
+  color: #fff;
+  font-weight: 700;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.9);
+  font-size: 0.95rem !important;
+  line-height: 1.2;
+  white-space: normal !important; 
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.movie-year {
+  display: block;
+  font-size: 0.75rem;
+  color: #ddd;
+  margin-top: 3px;
+  font-weight: 500;
+  opacity: 0.9;
+}
+
+/* --- MOBILE TWEAKS --- */
+@media (max-width: 768px) {
+  .card-quiz-btn, .card-watchlist-btn {
+    width: 28px;
+    height: 28px;
+  }
+  .card-quiz-btn .material-icons, .card-watchlist-btn .material-icons {
+    font-size: 14px;
+  }
+  .movie-info { padding: 8px; }
+  .movie-title { font-size: 0.8rem !important; }
+}

@@ -1,0 +1,306 @@
+/* src/components/Header.css */
+
+/* --- 1. GLOBAL LAYOUT FIXES (Desktop Defaults) --- */
+body {
+  /* Push content down by 71px (70px header + 1px border) so it's not hidden on Desktop */
+  padding-top: 71px; 
+}
+
+/* --- 2. HEADER CONTAINER --- */
+.app-header {
+  background-color: #141414;
+  border-bottom: 1px solid #2a2a2a;
+  
+  /* FIX: Change from sticky to FIXED for Desktop too. This is 100% reliable. */
+  position: fixed; 
+  top: 0;
+  left: 0;
+  width: 100%;
+  
+  z-index: 2000;
+}
+
+.header-main-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 70px;
+  padding: 0 20px;
+  position: relative;
+  z-index: 2002; 
+  background-color: #141414;
+}
+
+.header-logo {
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: #f1c40f;
+  text-decoration: none;
+  letter-spacing: 1px;
+}
+
+/* --- 3. DESKTOP ACTIONS --- */
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.header-icon-btn {
+  background: #222;
+  border: none;
+  color: #ccc;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.header-icon-btn:hover {
+  background: #333;
+  color: #fff;
+}
+
+.header-profile-btn {
+  background: #222;
+  border: none;
+  color: #fff;
+  padding: 8px 16px;
+  border-radius: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+}
+
+.header-logout-btn {
+  background: #e74c3c;
+  color: #fff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.auth-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.header-login-link {
+  color: #fff;
+  text-decoration: none;
+  font-weight: 600;
+  padding: 8px 15px;
+}
+
+.header-register-btn {
+  background: #f1c40f;
+  color: #000;
+  text-decoration: none;
+  font-weight: 700;
+  padding: 8px 15px;
+  border-radius: 20px;
+}
+
+/* --- 4. SEARCH BAR --- */
+.header-search-container {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  padding: 0 20px 15px 20px;
+  background: #141414;
+  transition: all 0.3s ease;
+}
+
+.search-input-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 600px;
+}
+
+.header-search {
+  width: 100%;
+  padding: 12px 15px 12px 45px;
+  border-radius: 25px;
+  border: 1px solid #333;
+  background-color: #222;
+  color: #fff;
+  font-size: 1rem;
+  outline: none;
+  transition: all 0.3s;
+}
+
+.header-search:focus {
+  background-color: #2a2a2a;
+  border-color: #555;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+.search-icon {
+  position: absolute;
+  left: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #888;
+}
+
+/* --- 5. MOBILE MENU --- */
+.mobile-menu-toggle {
+  display: none; 
+  background: none;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  padding: 5px;
+}
+
+.mobile-menu-overlay {
+  position: absolute;
+  top: 100%; 
+  left: 0;
+  width: 100%;
+  background-color: #1a1a1a;
+  border-bottom: none;
+  padding: 0;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease-in-out;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+  z-index: 1900; 
+}
+
+.mobile-menu-overlay.open {
+  max-height: 400px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #333; 
+}
+
+.mobile-menu-content {
+  display: flex;
+  flex-direction: column;
+  padding: 10px 20px;
+}
+
+.mobile-user-info {
+  color: #888;
+  padding: 10px 15px;
+  font-size: 0.9rem;
+  border-bottom: 1px solid #333;
+  margin-bottom: 10px;
+}
+
+.mobile-user-info strong {
+  color: #f1c40f;
+}
+
+.mobile-nav-item {
+  background: transparent;
+  border: none;
+  color: #eee;
+  padding: 15px;
+  text-align: left;
+  font-size: 1.1rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  border-radius: 8px;
+  cursor: pointer;
+  width: 100%;
+  text-decoration: none;
+}
+
+.mobile-nav-item:active {
+  background-color: #333;
+}
+
+.mobile-nav-item.highlight {
+  color: #f1c40f;
+  font-weight: bold;
+}
+
+.mobile-nav-item.logout {
+  color: #e74c3c;
+}
+
+.mobile-divider {
+  height: 1px;
+  background: #333;
+  margin: 10px 0;
+}
+
+/* --- 6. RESPONSIVE QUERIES --- */
+
+/* Desktop */
+@media (min-width: 769px) {
+  .header-search-container {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    width: auto;
+    padding: 0;
+    top: 15px; 
+    background: transparent;
+    z-index: 2005 !important;
+  }
+  
+  .header-search {
+    width: 400px;
+  }
+  
+  .mobile-menu-toggle {
+    display: none;
+  }
+  
+  .mobile-menu-overlay {
+    display: none;
+  }
+}
+
+/* Mobile Fixes (Keeping your good version intact) */
+@media (max-width: 768px) {
+  .header-actions.desktop-only {
+    display: none !important;
+  }
+  
+  .mobile-menu-toggle {
+    display: block;
+  }
+
+  /* Force Header to be FIXED on mobile */
+  .app-header {
+    position: fixed !important;
+    top: 0;
+    left: 0;
+    
+    display: flex;
+    flex-direction: column;
+    height: auto;
+    padding-bottom: 10px;
+    
+    border: none !important;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.4); 
+  }
+  
+  /* OVERRIDE Body Padding for Mobile (Taller header) */
+  body {
+    padding-top: 125px;
+  }
+
+  .header-main-row {
+    padding: 10px 20px;
+    height: 60px;
+  }
+  
+  .header-search-container {
+    padding: 0 20px 15px 20px;
+    background: transparent;
+  }
+}

@@ -1,0 +1,31 @@
+/* src/components/MovieList.css */
+
+.movie-list-grid {
+  display: grid;
+  /* RESPONSIVE LOGIC:
+     - auto-fill: Fits as many columns as possible.
+     - minmax(140px, 1fr): Columns must be at least 140px wide.
+       If they can't fit, it wraps. If there's extra space, they stretch (1fr).
+  */
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 20px; 
+  padding: 1rem 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* On larger screens (Tablets/Desktops), make the cards bigger */
+@media (min-width: 768px) {
+  .movie-list-grid {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 30px;
+  }
+}
+
+/* Style for the "No movies found" message */
+.no-movies {
+  text-align: center;
+  margin-top: 3rem;
+  color: #b3b3b3;
+  font-size: 1.2rem;
+}
