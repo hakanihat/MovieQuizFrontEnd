@@ -106,6 +106,7 @@ function QuizPage() {
         }
 
         if (quizRes.status === "fulfilled" && quizRes.value.data && quizRes.value.data.length > 0) {
+          // Backend now sends randomized data, no need to shuffle here
           setQuestions(quizRes.value.data);
           setShowStartModal(true); 
         } else {
@@ -169,9 +170,13 @@ function QuizPage() {
     setSelectedChoiceIndex(choiceIndex);
 
     const currentQuestion = questions[currentQuestionIndex];
+    
+    // --- UPDATED: Save the TEXT, not the index ---
+    const selectedText = currentQuestion.choices[choiceIndex];
+
     const newAnswers = [...userAnswers, {
       questionId: currentQuestion._id,
-      selectedIndex: choiceIndex
+      selectedAnswer: selectedText // Changed from selectedIndex to selectedAnswer
     }];
     setUserAnswers(newAnswers);
 
@@ -200,7 +205,7 @@ function QuizPage() {
     try {
       const payload = {
         imdbID,
-        answers: finalAnswers,
+        answers: finalAnswers, // This now contains { questionId, selectedAnswer (string) }
         movieTitle,
         timeTaken: timeTakenSeconds
       };
@@ -223,11 +228,9 @@ function QuizPage() {
   }
 
   // --- 7. BUTTON CLASS LOGIC ---
-  // We ensure the logic only returns "correct" or "wrong" if isAnswerProcessed is TRUE
   const getButtonClass = (index, correctIndex) => {
     if (!isAnswerProcessed) return "choice-btn"; 
     
-    // Feedback is ONLY revealed after the user clicks
     if (index === correctIndex) return "choice-btn correct";
     if (index === selectedChoiceIndex && index !== correctIndex) return "choice-btn wrong";
     
@@ -355,7 +358,6 @@ function QuizPage() {
                 className={getButtonClass(index, currentQuestion.correctIndex)}
               >
                 {choice}
-                {/* Only show icons after an answer is processed */}
                 {isAnswerProcessed && index === currentQuestion.correctIndex && <span className="material-icons">check_circle</span>}
                 {isAnswerProcessed && index === selectedChoiceIndex && index !== currentQuestion.correctIndex && <span className="material-icons">cancel</span>}
               </button>
