@@ -1,0 +1,201 @@
+/* src/pages/AdminDashboardPage.css */
+
+.admin-form-wrapper {
+  padding: 40px;
+  background: #181818;
+  color: #fff;
+}
+
+.admin-quiz-form {
+  max-width: 800px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.admin-quiz-form h3 {
+  color: #f1c40f;
+  border-bottom: 1px solid #333;
+  padding-bottom: 15px;
+  margin-bottom: 10px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-group label {
+  font-size: 0.9rem;
+  color: #aaa;
+  font-weight: 600;
+}
+
+.admin-quiz-form input[type="text"],
+.admin-quiz-form textarea {
+  background: #222;
+  border: 1px solid #444;
+  color: #fff;
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 1rem;
+}
+
+.admin-quiz-form input:focus,
+.admin-quiz-form textarea:focus {
+  border-color: #f1c40f;
+  outline: none;
+}
+
+/* Choices Grid */
+.choices-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  background: #222;
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid #333;
+}
+
+.input-with-radio {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.input-with-radio input[type="radio"] {
+  width: 20px;
+  height: 20px;
+  accent-color: #f1c40f;
+  cursor: pointer;
+}
+
+.submit-quiz-btn {
+  background: #f1c40f;
+  color: #000;
+  border: none;
+  padding: 15px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: transform 0.2s;
+}
+
+.submit-quiz-btn:hover {
+  background: #d4ac0d;
+  transform: translateY(-2px);
+}
+
+.submit-quiz-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Role Badges in User Table */
+.role-badge {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+.role-badge.admin { background: #e50914; color: white; }
+.role-badge.user { background: #333; color: #ccc; }
+
+.delete-btn {
+  background: transparent;
+  border: 1px solid #e74c3c;
+  color: #e74c3c;
+  border-radius: 5px;
+  padding: 5px 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.delete-btn:hover { background: #e74c3c; color: white; }
+
+@media (max-width: 768px) {
+  .choices-grid { grid-template-columns: 1fr; }
+}/* Add to existing AdminDashboardPage.css */
+
+.admin-autocomplete-list {
+  position: absolute;
+  top: 75px; /* Adjust based on input height */
+  left: 0;
+  width: 100%;
+  background: #2a2a2a;
+  border: 1px solid #444;
+  border-radius: 8px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  z-index: 100;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.admin-autocomplete-list li {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 10px 15px;
+  cursor: pointer;
+  border-bottom: 1px solid #333;
+  transition: background 0.2s;
+}
+
+.admin-autocomplete-list li:hover {
+  background: #f1c40f;
+  color: #000;
+}
+
+.admin-autocomplete-list li img {
+  width: 40px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.search-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.search-title {
+  font-weight: bold;
+  font-size: 1rem;
+}
+
+.search-year {
+  font-size: 0.85rem;
+  color: #aaa;
+}
+
+.admin-autocomplete-list li:hover .search-year {
+  color: #333;
+}
+
+.valid-movie-input {
+  border-color: #2ecc71 !important;
+  background-color: rgba(46, 204, 113, 0.1) !important;
+}
+
+.clear-btn {
+  background: #333;
+  border: 1px solid #555;
+  color: #fff;
+  width: 45px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1.2rem;
+}
+
+.clear-btn:hover {
+  background: #e74c3c;
+  border-color: #e74c3c;
+}

@@ -30,7 +30,8 @@ export const AuthProvider = ({ children }) => {
     const safeUser = {
       username: userData.username || userData.name,
       userId: userData._id || userData.id || userData.userId,
-      avatar: userData.avatar
+      avatar: userData.avatar,
+      role: userData.role
     };
 
     localStorage.setItem('token', authToken);

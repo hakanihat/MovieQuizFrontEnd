@@ -1,3 +1,4 @@
+// src/components/Header.jsx
 import React, { useContext, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { AuthContext } from '../contexts/AuthContext';
@@ -34,6 +35,18 @@ const Header = () => {
         <div className="header-actions desktop-only">
           {isAuthenticated ? (
             <>
+              {/* --- NEW: ADMIN DASHBOARD BUTTON --- */}
+              {user?.role === 'admin' && (
+                <button 
+                  className="header-icon-btn" 
+                  onClick={() => navigate('/admin')} 
+                  title="Admin Dashboard"
+                  style={{ border: '1px solid #e50914', color: '#e50914' }} // Red outline for Admin
+                >
+                  <span className="material-icons">admin_panel_settings</span>
+                </button>
+              )}
+
               <button className="header-icon-btn" onClick={() => navigate('/leaderboard')} title="Leaderboard">
                 <span className="material-icons">leaderboard</span>
               </button>
@@ -81,7 +94,6 @@ const Header = () => {
       )}
 
       {/* --- MOBILE DROPDOWN MENU --- */}
-      {/* Absolute positioned so it pushes nothing down */}
       <div className={`mobile-menu-overlay ${isMobileMenuOpen ? 'open' : ''}`}>
         <div className="mobile-menu-content">
           {isAuthenticated ? (
@@ -89,6 +101,14 @@ const Header = () => {
               <div className="mobile-user-info">
                 Hello, <strong>{user?.username || 'User'}</strong>
               </div>
+              
+              {/* --- NEW: MOBILE ADMIN LINK --- */}
+              {user?.role === 'admin' && (
+                <button onClick={() => { navigate('/admin'); setIsMobileMenuOpen(false); }} className="mobile-nav-item" style={{color: '#e50914'}}>
+                  <span className="material-icons">admin_panel_settings</span> Admin Dashboard
+                </button>
+              )}
+
               <button onClick={() => { navigate('/profile'); setIsMobileMenuOpen(false); }} className="mobile-nav-item">
                 <span className="material-icons">person</span> Profile
               </button>
