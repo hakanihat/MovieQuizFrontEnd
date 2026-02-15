@@ -1,24 +1,45 @@
 /* src/pages/AdminDashboardPage.css */
 
-.admin-form-wrapper {
-  padding: 40px;
+.full-width-container {
+  max-width: 1400px !important;
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 30px;
+  padding: 20px;
+  align-items: start;
+}
+
+@media (max-width: 1024px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.section-title {
+  color: #f1c40f;
+  border-bottom: 2px solid #333;
+  padding-bottom: 10px;
+  margin-bottom: 20px;
+  font-size: 1.5rem;
+}
+
+/* --- LEFT: EDITOR --- */
+.editor-section {
   background: #181818;
-  color: #fff;
+  padding: 25px;
+  border-radius: 12px;
+  border: 1px solid #333;
+  position: sticky;
+  top: 20px;
 }
 
 .admin-quiz-form {
-  max-width: 800px;
-  margin: 0 auto;
   display: flex;
   flex-direction: column;
-  gap: 20px;
-}
-
-.admin-quiz-form h3 {
-  color: #f1c40f;
-  border-bottom: 1px solid #333;
-  padding-bottom: 15px;
-  margin-bottom: 10px;
+  gap: 15px;
 }
 
 .form-group {
@@ -41,23 +62,27 @@
   padding: 12px;
   border-radius: 8px;
   font-size: 1rem;
+  width: 100%;
 }
 
-.admin-quiz-form input:focus,
-.admin-quiz-form textarea:focus {
-  border-color: #f1c40f;
-  outline: none;
+.valid-movie-input {
+  border-color: #2ecc71 !important;
+  color: #2ecc71 !important;
 }
 
-/* Choices Grid */
+.selected-tag {
+  font-size: 0.85rem;
+  color: #2ecc71;
+  margin-top: 5px;
+}
+
 .choices-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 20px;
+  gap: 15px;
   background: #222;
-  padding: 20px;
-  border-radius: 12px;
-  border: 1px solid #333;
+  padding: 15px;
+  border-radius: 8px;
 }
 
 .input-with-radio {
@@ -67,94 +92,181 @@
 }
 
 .input-with-radio input[type="radio"] {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   accent-color: #f1c40f;
   cursor: pointer;
+}
+
+.form-actions-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
 }
 
 .submit-quiz-btn {
   background: #f1c40f;
   color: #000;
   border: none;
-  padding: 15px;
-  font-size: 1.1rem;
+  padding: 12px;
+  font-size: 1rem;
   font-weight: bold;
-  border-radius: 8px;
+  border-radius: 6px;
   cursor: pointer;
-  margin-top: 10px;
-  transition: transform 0.2s;
+  flex: 1;
 }
 
-.submit-quiz-btn:hover {
-  background: #d4ac0d;
-  transform: translateY(-2px);
+.submit-quiz-btn.update-mode {
+  background: #e67e22;
+  color: white;
 }
 
-.submit-quiz-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-/* Role Badges in User Table */
-.role-badge {
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 0.8rem;
+.cancel-edit-btn {
+  background: #444;
+  color: white;
+  border: none;
+  padding: 12px;
+  font-size: 1rem;
   font-weight: bold;
-  text-transform: uppercase;
-}
-.role-badge.admin { background: #e50914; color: white; }
-.role-badge.user { background: #333; color: #ccc; }
-
-.delete-btn {
-  background: transparent;
-  border: 1px solid #e74c3c;
-  color: #e74c3c;
-  border-radius: 5px;
-  padding: 5px 12px;
+  border-radius: 6px;
   cursor: pointer;
-  transition: all 0.2s;
-}
-.delete-btn:hover { background: #e74c3c; color: white; }
-
-@media (max-width: 768px) {
-  .choices-grid { grid-template-columns: 1fr; }
-}/* Add to existing AdminDashboardPage.css */
-
-.admin-autocomplete-list {
-  position: absolute;
-  top: 75px; /* Adjust based on input height */
-  left: 0;
-  width: 100%;
-  background: #2a2a2a;
-  border: 1px solid #444;
-  border-radius: 8px;
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  z-index: 100;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.8);
-  max-height: 300px;
-  overflow-y: auto;
+  flex: 1;
 }
 
-.admin-autocomplete-list li {
+/* --- RIGHT: LIST --- */
+.list-section {
+  background: #111;
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid #333;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* SEARCH BOX STYLES */
+.library-search-box {
   display: flex;
   align-items: center;
+  background: #222;
+  border: 1px solid #444;
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin-bottom: 15px;
+}
+
+.library-search-box input {
+  background: transparent;
+  border: none;
+  color: white;
+  margin-left: 10px;
+  width: 100%;
+  outline: none;
+}
+
+.library-search-box .search-icon {
+  color: #888;
+}
+
+.quiz-list-container {
+  overflow-y: auto;
+  padding-right: 10px;
+  display: flex;
+  flex-direction: column;
   gap: 15px;
-  padding: 10px 15px;
-  cursor: pointer;
-  border-bottom: 1px solid #333;
+}
+
+.quiz-card {
+  background: #222;
+  border-left: 4px solid #444;
+  padding: 15px;
+  border-radius: 6px;
   transition: background 0.2s;
 }
 
-.admin-autocomplete-list li:hover {
-  background: #f1c40f;
-  color: #000;
+.quiz-card:hover {
+  background: #2a2a2a;
 }
 
-.admin-autocomplete-list li img {
+.quiz-card.editing {
+  border-left-color: #e67e22;
+  background: #2d261e;
+}
+
+.quiz-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.movie-id-tag {
+  background: #333;
+  font-size: 0.75rem;
+  padding: 4px 8px;
+  border-radius: 4px;
+  color: #ccc;
+}
+
+.quiz-card-actions .icon-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.1rem;
+  margin-left: 8px;
+  opacity: 0.7;
+}
+
+.quiz-card-actions .icon-btn:hover {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+.quiz-q-text {
+  font-weight: 600;
+  margin-bottom: 5px;
+  color: #eee;
+}
+
+.quiz-ans-preview {
+  font-size: 0.9rem;
+  color: #aaa;
+}
+.quiz-ans-preview strong {
+  color: #2ecc71;
+}
+
+/* --- DROPDOWN WITH IMAGE --- */
+.admin-autocomplete-list {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: #222;
+  border: 1px solid #444;
+  z-index: 10;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  max-height: 200px;
+  overflow-y: auto;
+  border-radius: 0 0 8px 8px;
+}
+
+.admin-autocomplete-list li {
+  padding: 8px;
+  cursor: pointer;
+  border-bottom: 1px solid #333;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.admin-autocomplete-list li:hover {
+  background: #333;
+}
+
+.dropdown-poster {
   width: 40px;
   height: 60px;
   object-fit: cover;
@@ -168,34 +280,101 @@
 
 .search-title {
   font-weight: bold;
-  font-size: 1rem;
+  color: #fff;
 }
 
 .search-year {
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   color: #aaa;
 }
 
-.admin-autocomplete-list li:hover .search-year {
-  color: #333;
-}
-
-.valid-movie-input {
-  border-color: #2ecc71 !important;
-  background-color: rgba(46, 204, 113, 0.1) !important;
-}
-
 .clear-btn {
-  background: #333;
-  border: 1px solid #555;
-  color: #fff;
-  width: 45px;
-  border-radius: 8px;
+  background: #444;
+  border: none;
+  color: white;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
   cursor: pointer;
-  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.clear-btn:hover {
-  background: #e74c3c;
-  border-color: #e74c3c;
+/* --- USER ACTIONS & ROLE EDITING --- */
+.admin-actions-flex {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+/* Styled Dropdown wrapper for the custom arrow */
+.role-select-wrapper {
+  position: relative;
+}
+
+.role-edit-select {
+  appearance: none; /* Removes default browser arrow */
+  background-color: #1a1a1a;
+  border: 1px solid #444;
+  color: #f1c40f; /* Gold text */
+  padding: 8px 30px 8px 12px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  outline: none;
+}
+
+/* Custom Arrow for the select box */
+.role-select-wrapper::after {
+  content: '▼';
+  font-size: 0.6rem;
+  color: #f1c40f;
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.role-edit-select:hover {
+  border-color: #f1c40f;
+  background-color: #252525;
+}
+
+.role-edit-select:focus {
+  border-color: #f1c40f;
+  box-shadow: 0 0 8px rgba(241, 196, 15, 0.2);
+}
+
+/* Re-polishing the Delete Button to match the height */
+.delete-btn {
+  background: rgba(229, 9, 20, 0.1);
+  border: 1px solid #e50914;
+  color: #e50914;
+  padding: 7px 14px; 
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.3s ease;
+}
+
+.delete-btn:hover {
+  background: #e50914;
+  color: #fff;
+}
+
+.immutable-label {
+  color: #555;
+  font-size: 0.75rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }

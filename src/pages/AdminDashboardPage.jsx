@@ -1,12 +1,11 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import apiClient from '../api/apiService';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { toast } from 'react-toastify';
 import axios from 'axios';
-import './LeaderBoardPage.css'; // Re-using existing table styles
+import './LeaderBoardPage.css';
 import './AdminDashboardPage.css'; 
 
-// ⚠️ REPLACE WITH YOUR REAL KEY
 const TMDB_API_KEY = "fadad4bcd67791ac88cb9e614c380fd2"; 
 
 const AdminDashboardPage = () => {
@@ -14,29 +13,39 @@ const AdminDashboardPage = () => {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // --- QUIZ MANAGEMENT STATE ---
+  const [allQuizzes, setAllQuizzes] = useState([]); 
+  const [editingId, setEditingId] = useState(null); 
+  
+  // NEW: Library Search State
+  const [librarySearch, setLibrarySearch] = useState('');
+
   // --- MOVIE SEARCH STATE ---
   const [movieSearch, setMovieSearch] = useState('');
   const [movieOptions, setMovieOptions] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const [selectedMovie, setSelectedMovie] = useState(null);
 
-  // --- QUIZ FORM STATE ---
-  const [quizForm, setQuizForm] = useState({
+  // --- FORM STATE ---
+  const initialFormState = {
     questionText: '',
     choice1: '',
     choice2: '',
     choice3: '',
     choice4: '',
     correctIndex: 0
-  });
+  };
+  const [quizForm, setQuizForm] = useState(initialFormState);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // --- INITIAL DATA FETCH ---
   useEffect(() => {
     fetchStats();
-  }, []);
+    if (activeTab === 'quizzes') {
+      fetchQuizzes();
+    }
+  }, [activeTab]);
 
-  // --- SEARCH DEBOUNCE LOGIC ---
+  // --- DEBOUNCED MOVIE SEARCH ---
   useEffect(() => {
     const delayDebounceFn = setTimeout(async () => {
       if (movieSearch.trim().length > 2 && !selectedMovie) {
@@ -63,9 +72,18 @@ const AdminDashboardPage = () => {
       const res = await apiClient.get('/admin/dashboard');
       setStats(res.data);
     } catch (error) {
-      toast.error("Failed to load admin data");
+      toast.error("Failed to load user stats");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchQuizzes = async () => {
+    try {
+      const res = await apiClient.get('/quiz/all');
+      setAllQuizzes(res.data);
+    } catch (error) {
+      console.error("Failed to load quizzes", error);
     }
   };
 
@@ -80,10 +98,10 @@ const AdminDashboardPage = () => {
     }
   };
 
-  // --- FORM HANDLERS ---
+  // --- QUIZ HANDLERS ---
   const handleMovieSelect = (movie) => {
     setSelectedMovie(movie);
-    setMovieSearch(movie.title); // Show title in input
+    setMovieSearch(movie.title);
     setShowDropdown(false);
   };
 
@@ -97,61 +115,103 @@ const AdminDashboardPage = () => {
     setQuizForm({ ...quizForm, [e.target.name]: e.target.value });
   };
 
-  const handleAddQuiz = async (e) => {
+  const handleQuizSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    // Validate inputs
-    if(!selectedMovie) {
+    if(!selectedMovie && !editingId) {
        toast.error("Please search and select a valid movie first.");
-       setIsSubmitting(false);
-       return;
-    }
-    if(!quizForm.questionText || !quizForm.choice1 || !quizForm.choice2) {
-       toast.error("Please fill in all question fields");
        setIsSubmitting(false);
        return;
     }
 
     const payload = {
-      imdbID: String(selectedMovie.id), // Use the Verified ID from TMDB
+      imdbID: selectedMovie ? String(selectedMovie.id) : null,
       questionText: quizForm.questionText,
       choices: [
-        quizForm.choice1,
-        quizForm.choice2,
-        quizForm.choice3,
-        quizForm.choice4
+        quizForm.choice1, quizForm.choice2, quizForm.choice3, quizForm.choice4
       ],
       correctIndex: parseInt(quizForm.correctIndex)
     };
+    
+    if(editingId && !selectedMovie) {
+        delete payload.imdbID; 
+    }
 
     try {
-      await apiClient.post('/quiz', payload);
-      toast.success(`Question added for "${selectedMovie.title}"!`);
-      
-      // Reset only the question part, keep movie selected for faster entry
-      setQuizForm(prev => ({
-        ...prev,
-        questionText: '',
-        choice1: '',
-        choice2: '',
-        choice3: '',
-        choice4: '',
-        correctIndex: 0
-      }));
+      if (editingId) {
+        await apiClient.put(`/quiz/${editingId}`, payload);
+        toast.success("Question updated!");
+      } else {
+        await apiClient.post('/quiz', payload);
+        toast.success(`Question added!`);
+      }
+      resetForm();
+      fetchQuizzes(); 
     } catch (error) {
       console.error(error);
-      toast.error("Failed to add question.");
+      toast.error("Operation failed.");
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  const handleEdit = (quiz) => {
+    setEditingId(quiz._id);
+    setQuizForm({
+      questionText: quiz.questionText,
+      choice1: quiz.choices[0],
+      choice2: quiz.choices[1],
+      choice3: quiz.choices[2],
+      choice4: quiz.choices[3],
+      correctIndex: quiz.correctIndex
+    });
+    setMovieSearch(`(Editing ID: ${quiz.imdbID})`);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleDeleteQuiz = async (id) => {
+    if (!window.confirm("Delete this question?")) return;
+    try {
+      await apiClient.delete(`/quiz/${id}`);
+      toast.success("Question deleted");
+      fetchQuizzes();
+    } catch (err) {
+      toast.error("Delete failed");
+    }
+  };
+const handleRoleChange = async (userId, newRole) => {
+  try {
+    // This calls the backend endpoint we discussed earlier
+    await apiClient.patch(`/admin/users/${userId}/role`, { role: newRole });
+    toast.success(`Role updated to ${newRole}`);
+    fetchStats(); // Refresh the table
+  } catch (error) {
+    toast.error("Failed to update role");
+    console.error(error);
+  }
+};
+  const resetForm = () => {
+    setEditingId(null);
+    setQuizForm(initialFormState);
+    clearSelection();
+  };
+
+  // --- FILTER LOGIC FOR LIBRARY ---
+  const filteredQuizzes = allQuizzes.filter(quiz => {
+    const term = librarySearch.toLowerCase();
+    // Search by Question Text OR IMDb ID
+    return (
+      quiz.questionText.toLowerCase().includes(term) ||
+      quiz.imdbID.includes(term)
+    );
+  });
+
   if (loading) return <LoadingSpinner />;
 
   return (
     <div className="leaderboard-page">
-      <div className="leaderboard-container">
+      <div className="leaderboard-container full-width-container">
         
         <div className="lb-header-row" style={{background: 'linear-gradient(180deg, #3e0a0a 0%, #1a1a1a 100%)'}}>
           <h1 className="lb-title">Admin Dashboard</h1>
@@ -160,13 +220,13 @@ const AdminDashboardPage = () => {
               className={`lb-tab ${activeTab === 'users' ? 'active' : ''}`} 
               onClick={() => setActiveTab('users')}
             >
-              Manage Users ({stats?.totalUsers})
+              Manage Users
             </button>
             <button 
               className={`lb-tab ${activeTab === 'quizzes' ? 'active' : ''}`} 
               onClick={() => setActiveTab('quizzes')}
             >
-              Add Quiz
+              Manage Quizzes ({allQuizzes.length})
             </button>
           </div>
         </div>
@@ -190,21 +250,34 @@ const AdminDashboardPage = () => {
                       {u.username}
                     </td>
                     <td className="score-col" style={{textAlign:'left'}}>{u.email}</td>
-                    <td className="time-col">
-                      <span className={`role-badge ${u.role}`}>
-                        {u.role}
-                      </span>
-                    </td>
-                    <td className="quiz-col">
-                      {u.role !== 'admin' && (
-                        <button 
-                          onClick={() => handleDeleteUser(u._id)}
-                          className="delete-btn"
-                        >
-                          Delete
-                        </button>
-                      )}
-                    </td>
+                    <td className="time-col"><span className={`role-badge ${u.role}`}>{u.role}</span></td>
+                   <div className="admin-actions-flex">
+                {u.username !== 'asd' ? (
+                  <>
+                    {/* 👇 NEW: ROLE EDIT DROPDOWN */}
+                    <div className="role-select-wrapper">
+                      <select 
+                        className="role-edit-select"
+                        value={u.role}
+                        onChange={(e) => handleRoleChange(u._id, e.target.value)}
+                      >
+                        <option value="user">User</option>
+                        <option value="admin">Admin</option>
+                      </select>
+                    </div>
+
+                    <button 
+                      onClick={() => handleDeleteUser(u._id)} 
+                      className="delete-btn"
+                    >
+                      <span className="material-icons">delete_outline</span>
+                      Delete
+                    </button>
+                  </>
+                ) : (
+                  <span className="immutable-label">System Protected</span>
+                )}
+              </div>
                   </tr>
                 ))}
               </tbody>
@@ -212,107 +285,145 @@ const AdminDashboardPage = () => {
           </div>
         )}
 
-        {/* --- ADD QUIZ FORM --- */}
         {activeTab === 'quizzes' && (
-          <div className="admin-form-wrapper">
-            <form onSubmit={handleAddQuiz} className="admin-quiz-form">
-              <h3>Create New Question</h3>
+          <div className="dashboard-grid">
+            
+            {/* LEFT: EDITOR */}
+            <div className="editor-section">
+              <h3 className="section-title">
+                {editingId ? '✏️ Edit Question' : '➕ Add New Question'}
+              </h3>
               
-              {/* --- SEARCH FIELD --- */}
-              <div className="form-group" style={{position: 'relative'}}>
-                <label>Find Movie (Search by Name)</label>
-                <div style={{display: 'flex', gap: '10px'}}>
-                  <input 
-                    type="text" 
-                    value={movieSearch}
-                    onChange={(e) => {
-                      setMovieSearch(e.target.value);
-                      if(selectedMovie) setSelectedMovie(null); // Clear selection on edit
-                    }}
-                    placeholder="Type movie name (e.g. Inception)"
-                    className={selectedMovie ? "valid-movie-input" : ""}
-                    autoComplete="off"
-                  />
+              <form onSubmit={handleQuizSubmit} className="admin-quiz-form">
+                
+                <div className="form-group" style={{position: 'relative'}}>
+                  <label>Movie (Search to change)</label>
+                  <div style={{display: 'flex', gap: '10px'}}>
+                    <input 
+                      type="text" 
+                      value={movieSearch}
+                      onChange={(e) => {
+                        setMovieSearch(e.target.value);
+                        if(selectedMovie) setSelectedMovie(null); 
+                      }}
+                      placeholder={editingId ? "Search to change movie..." : "Type movie name..."}
+                      className={selectedMovie ? "valid-movie-input" : ""}
+                      autoComplete="off"
+                    />
+                    {selectedMovie && (
+                      <button type="button" className="clear-btn" onClick={clearSelection}>✕</button>
+                    )}
+                  </div>
+
+                  {showDropdown && movieOptions.length > 0 && (
+                    <ul className="admin-autocomplete-list">
+                      {movieOptions.slice(0, 6).map(movie => (
+                        <li key={movie.id} onClick={() => handleMovieSelect(movie)}>
+                          {/* 👇 IMAGE RESTORED HERE 👇 */}
+                          <img 
+                            src={movie.poster_path ? `https://image.tmdb.org/t/p/w92${movie.poster_path}` : "https://via.placeholder.com/40"} 
+                            alt="poster"
+                            className="dropdown-poster"
+                          />
+                          <div className="search-info">
+                            <span className="search-title">{movie.title}</span>
+                            <span className="search-year">{movie.release_date?.substring(0,4)}</span>
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                   {selectedMovie && (
-                    <button type="button" className="clear-btn" onClick={clearSelection}>
-                      ✕
-                    </button>
+                    <div className="selected-tag">Selected: {selectedMovie.title}</div>
                   )}
                 </div>
 
-                {/* Dropdown Results */}
-                {showDropdown && movieOptions.length > 0 && (
-                  <ul className="admin-autocomplete-list">
-                    {movieOptions.slice(0, 6).map(movie => (
-                      <li key={movie.id} onClick={() => handleMovieSelect(movie)}>
-                        <img 
-                          src={movie.poster_path ? `https://image.tmdb.org/t/p/w92${movie.poster_path}` : "https://via.placeholder.com/40"} 
-                          alt="poster" 
+                <div className="form-group">
+                  <label>Question Text</label>
+                  <textarea 
+                    name="questionText" 
+                    value={quizForm.questionText} 
+                    onChange={handleQuizChange} 
+                    rows="3"
+                    required
+                  />
+                </div>
+
+                <div className="choices-grid">
+                  {[1, 2, 3, 4].map((num, idx) => (
+                    <div key={num} className="form-group">
+                      <label>Option {num}</label>
+                      <div className="input-with-radio">
+                        <input 
+                          type="radio" 
+                          name="correctIndex" 
+                          value={idx} 
+                          checked={parseInt(quizForm.correctIndex) === idx}
+                          onChange={handleQuizChange}
                         />
-                        <div className="search-info">
-                          <span className="search-title">{movie.title}</span>
-                          <span className="search-year">{movie.release_date?.substring(0,4)}</span>
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
-                )}
+                        <input 
+                          type="text" 
+                          name={`choice${num}`} 
+                          value={quizForm[`choice${num}`]} 
+                          onChange={handleQuizChange} 
+                          required
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
 
-                {/* Selected Indicator */}
-                {selectedMovie && (
-                  <div style={{marginTop: '5px', fontSize: '0.9rem', color: '#2ecc71'}}>
-                    <span className="material-icons" style={{fontSize:'14px', verticalAlign:'middle'}}>check_circle</span>
-                    {' '}Selected: <strong>{selectedMovie.title}</strong> (ID: {selectedMovie.id})
-                  </div>
-                )}
-              </div>
+                <div className="form-actions-row">
+                  <button type="submit" className={`submit-quiz-btn ${editingId ? 'update-mode' : ''}`} disabled={isSubmitting}>
+                    {isSubmitting ? 'Saving...' : (editingId ? 'Update Question' : 'Add Question')}
+                  </button>
+                  {editingId && (
+                    <button type="button" onClick={resetForm} className="cancel-edit-btn">
+                      Cancel Edit
+                    </button>
+                  )}
+                </div>
+              </form>
+            </div>
 
-              <div className="form-group">
-                <label>Question Text</label>
-                <textarea 
-                  name="questionText" 
-                  value={quizForm.questionText} 
-                  onChange={handleQuizChange} 
-                  placeholder="What happens at the end of..."
-                  rows="3"
-                  required
+            {/* RIGHT: LIBRARY */}
+            <div className="list-section">
+              <h3 className="section-title">📚 Question Library</h3>
+              
+              {/* 👇 NEW SEARCH BOX 👇 */}
+              <div className="library-search-box">
+                <span className="material-icons search-icon">search</span>
+                <input 
+                  type="text" 
+                  placeholder="Search by Movie ID or Question..." 
+                  value={librarySearch}
+                  onChange={(e) => setLibrarySearch(e.target.value)}
                 />
               </div>
 
-              <div className="choices-grid">
-                {[1, 2, 3, 4].map((num, idx) => (
-                  <div key={num} className="form-group">
-                    <label>Option {num}</label>
-                    <div className="input-with-radio">
-                      <input 
-                        type="radio" 
-                        name="correctIndex" 
-                        value={idx} 
-                        checked={parseInt(quizForm.correctIndex) === idx}
-                        onChange={handleQuizChange}
-                      />
-                      <input 
-                        type="text" 
-                        name={`choice${num}`} 
-                        value={quizForm[`choice${num}`]} 
-                        onChange={handleQuizChange} 
-                        placeholder={`Choice ${num}`}
-                        required
-                      />
+              <div className="quiz-list-container">
+                {filteredQuizzes.length === 0 ? (
+                  <p className="empty-msg">No questions found matching your search.</p>
+                ) : (
+                  filteredQuizzes.map(quiz => (
+                    <div key={quiz._id} className={`quiz-card ${editingId === quiz._id ? 'editing' : ''}`}>
+                      <div className="quiz-card-header">
+                        <span className="movie-id-tag">ID: {quiz.imdbID}</span>
+                        <div className="quiz-card-actions">
+                          <button onClick={() => handleEdit(quiz)} className="icon-btn edit" title="Edit">✏️</button>
+                          <button onClick={() => handleDeleteQuiz(quiz._id)} className="icon-btn delete" title="Delete">🗑️</button>
+                        </div>
+                      </div>
+                      <p className="quiz-q-text">{quiz.questionText}</p>
+                      <div className="quiz-ans-preview">
+                        Correct: <strong>{quiz.choices[quiz.correctIndex]}</strong>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
+            </div>
 
-              <button 
-                type="submit" 
-                className="submit-quiz-btn" 
-                disabled={isSubmitting || !selectedMovie}
-                style={{ opacity: !selectedMovie ? 0.5 : 1 }}
-              >
-                {isSubmitting ? 'Saving...' : 'Add Question'}
-              </button>
-            </form>
           </div>
         )}
 
