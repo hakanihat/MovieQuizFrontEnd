@@ -1,70 +1,135 @@
-# Getting Started with Create React App
+# Movie Quiz — Frontend
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+This is the React app people actually see and click around in. You browse movies,
+take a quiz on the ones you've seen, save a watchlist, add friends, and try to
+climb the leaderboard. Admins get their own dashboard for managing users and
+writing quiz questions.
 
-## Available Scripts
+**Live version:** https://moviequiz-liart.vercel.app
 
-In the project directory, you can run:
+It's a Create React App project that leans on a few well-worn tools rather than
+anything fancy — React Router for pages, Axios for talking to the API, and React's
+Context API for the bits of state that need to be shared (who's logged in, what's
+in the watchlist, the current search). Everything the app needs — including movie
+data — comes from the backend, so there are no API keys hiding in here.
 
-### `npm start`
+> Heads up: this app doesn't do much on its own. It needs the **Movie Quiz
+> backend** running somewhere it can reach, otherwise logins and movies won't load.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+---
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## What it can do
 
-### `npm test`
+- **Accounts** — register, log in with a username *or* email, and reset a forgotten
+  password.
+- **Browse** — a homepage of movie carousels (Top Rated, Now Playing, Popular,
+  Upcoming), category pages that load more as you scroll, and detail pages with
+  trailers and cast.
+- **Search** — type and it searches (debounced so it's not firing on every keystroke).
+- **Quizzes** — answer questions about a movie with instant feedback, on a timer.
+  Each quiz is one attempt, and the scoring happens on the server so it can't be
+  gamed.
+- **Watchlist** — save movies and they stick around for next time.
+- **Friends** — find people, send requests, accept or decline, and peek at friends'
+  profiles.
+- **Leaderboards** — global standings and per-movie standings.
+- **Admin** — a separate dashboard to manage users (roles, removals) and create or
+  edit quiz questions, with a movie picker wired up to search.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+There's also a route guard for logged-in vs. admin pages, an error boundary so one
+broken component doesn't nuke the whole app, and a proper 404 page.
 
-### `npm run build`
+---
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## How it's organized
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+```
+src/
+├── App.jsx              → all the routes and which ones need a login
+├── api/apiService.jsx   → the Axios setup (adds your token, handles 401s/timeouts)
+├── contexts/            → Auth, Watchlist, and Search state
+├── components/          → Header, movie cards/lists/carousels, guards, error boundary
+└── pages/               → Home, Category, MovieDetails, Quiz, Leaderboard,
+                           Profile, Watchlist, Admin, Login, Register, etc.
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+A couple of things worth knowing:
 
-### `npm run eject`
+- **`api/apiService.jsx`** is the single Axios instance everything uses. It quietly
+  attaches your login token to each request, and if the server ever says "401
+  unauthorized," it clears your session and bounces you to the login page.
+- **The three contexts** wrap the whole app in `App.jsx` — `AuthContext` remembers
+  who you are (and survives a refresh via `localStorage`), `WatchlistContext` keeps
+  your saved movies in sync with the server, and `SearchContext` shares the search
+  box value across pages.
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+### The pages, and who can see them
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+| Path                     | Who          |
+| ------------------------ | ------------ |
+| `/`, `/login`, `/register`, `/forgot-password`, `/reset-password/:token`, `/category/:type` | anyone |
+| `/profile`, `/profile/:userId`, `/watchlist`, `/quiz/:imdbID`, `/movie/:imdbID`, `/leaderboard` | logged in |
+| `/admin`                 | admins only  |
+| anything else            | 404 page     |
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+---
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+## Running it
 
-## Learn More
+You'll need **Node 16+** and the backend running somewhere (locally that's
+`http://localhost:3001` by default).
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+```bash
+npm install
+cp .env.example .env     # then point it at your backend
+npm start
+```
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+That opens the app on **http://localhost:3000**.
 
-### Code Splitting
+One gotcha that trips everyone up at least once: Create React App only reads `.env`
+**when it starts**. If you change a variable, stop and restart `npm start` — it
+won't pick it up otherwise.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+### The .env file
 
-### Analyzing the Bundle Size
+Just one variable, and it's git-ignored:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+| Variable            | What it's for                                   |
+| ------------------- | ----------------------------------------------- |
+| `REACT_APP_API_URL` | Where the backend lives (e.g. `http://localhost:3001`, or your deployed URL) |
 
-### Making a Progressive Web App
+No TMDB key lives here — the movies come through the backend, so the key stays on
+the server where it belongs.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+---
 
-### Advanced Configuration
+## Scripts
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+| Command         | Does what                          |
+| --------------- | ---------------------------------- |
+| `npm start`     | Dev server on port 3000            |
+| `npm run build` | Production build into `build/`     |
+| `npm test`      | Run the tests                      |
 
-### Deployment
+---
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+## When movies won't load
 
-### `npm run build` fails to minify
+If you deploy this and the homepage is empty, it's almost always one of two things,
+and they're easy to check:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+1. The backend isn't actually deployed or reachable, or
+2. `REACT_APP_API_URL` is still pointing at `localhost` instead of your live backend.
+
+Also make sure the backend's `FRONTEND_URL` is set to this app's address, or CORS
+will quietly block every request.
+
+---
+
+## Deploying
+
+This one's on **Vercel**. To put up your own copy: import the repo (Vercel detects
+Create React App automatically), set `REACT_APP_API_URL` to your backend's URL in
+the project's environment variables, and deploy. Just remember that changing an env
+var means you need to redeploy for it to take effect.
