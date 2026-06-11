@@ -73,11 +73,13 @@ const ProfilePage = () => {
       let data;
 
       if (isOwnProfile) {
-        const res = await apiClient.get('/users/profile');
+        const [res, reqRes, friendsRes] = await Promise.all([
+          apiClient.get('/users/profile'),
+          apiClient.get('/friends/requests/incoming'),
+          apiClient.get('/friends'),
+        ]);
         data = res.data;
-        const reqRes = await apiClient.get('/friends/requests/incoming');
         setIncomingRequests(reqRes.data);
-        const friendsRes = await apiClient.get('/friends');
         setMyFriends(friendsRes.data);
       } else {
         const res = await apiClient.get(`/users/${userId}/profile`);

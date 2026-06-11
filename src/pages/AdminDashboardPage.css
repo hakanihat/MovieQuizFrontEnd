@@ -378,3 +378,40 @@
   text-transform: uppercase;
   letter-spacing: 1px;
 }
+
+/* --- Pagination controls --- */
+.lb-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  padding: 18px 0;
+}
+
+.lb-page-btn {
+  background: rgba(241, 196, 15, 0.08);
+  border: 1px solid #444;
+  color: #f1c40f;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.lb-page-btn:hover:not(:disabled) {
+  border-color: #f1c40f;
+  background: rgba(241, 196, 15, 0.18);
+}
+
+.lb-page-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.lb-page-info {
+  color: #aaa;
+  font-size: 0.85rem;
+  font-weight: 500;
+}

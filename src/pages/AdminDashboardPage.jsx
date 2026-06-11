@@ -1,17 +1,20 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
+import { AuthContext } from '../contexts/AuthContext';
 import apiClient from '../api/apiService';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { toast } from 'react-toastify';
-import axios from 'axios';
 import './LeaderBoardPage.css';
-import './AdminDashboardPage.css'; 
-
-const TMDB_API_KEY = "fadad4bcd67791ac88cb9e614c380fd2"; 
+import './AdminDashboardPage.css';
 
 const AdminDashboardPage = () => {
-  const [activeTab, setActiveTab] = useState('users'); 
+  const { user: currentUser } = useContext(AuthContext);
+  const [activeTab, setActiveTab] = useState('users');
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  // --- USER PAGINATION ---
+  const [userPage, setUserPage] = useState(1);
+  const USERS_PER_PAGE = 20;
 
   // --- QUIZ MANAGEMENT STATE ---
   const [allQuizzes, setAllQuizzes] = useState([]); 
@@ -43,15 +46,15 @@ const AdminDashboardPage = () => {
     if (activeTab === 'quizzes') {
       fetchQuizzes();
     }
-  }, [activeTab]);
+  }, [activeTab, userPage]);
 
   // --- DEBOUNCED MOVIE SEARCH ---
   useEffect(() => {
     const delayDebounceFn = setTimeout(async () => {
       if (movieSearch.trim().length > 2 && !selectedMovie) {
         try {
-          const res = await axios.get(
-            `https://api.themoviedb.org/3/search/movie?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(movieSearch)}`
+          const res = await apiClient.get(
+            `/movies/search?q=${encodeURIComponent(movieSearch)}`
           );
           setMovieOptions(res.data.results || []);
           setShowDropdown(true);
@@ -69,7 +72,9 @@ const AdminDashboardPage = () => {
 
   const fetchStats = async () => {
     try {
-      const res = await apiClient.get('/admin/dashboard');
+      const res = await apiClient.get(
+        `/admin/dashboard?page=${userPage}&limit=${USERS_PER_PAGE}`
+      );
       setStats(res.data);
     } catch (error) {
       toast.error("Failed to load user stats");
@@ -92,7 +97,12 @@ const AdminDashboardPage = () => {
     try {
       await apiClient.delete(`/admin/users/${userId}`);
       toast.success("User deleted");
-      fetchStats(); 
+      // If we just removed the last row on a non-first page, step back.
+      if (stats?.users?.length === 1 && userPage > 1) {
+        setUserPage((p) => p - 1);
+      } else {
+        fetchStats();
+      }
     } catch (error) {
       toast.error("Failed to delete user");
     }
@@ -252,7 +262,7 @@ const handleRoleChange = async (userId, newRole) => {
                     <td className="score-col" style={{textAlign:'left'}}>{u.email}</td>
                     <td className="time-col"><span className={`role-badge ${u.role}`}>{u.role}</span></td>
                    <div className="admin-actions-flex">
-                {u.username !== 'asd' ? (
+                {u._id !== currentUser?.userId ? (
                   <>
                     {/* 👇 NEW: ROLE EDIT DROPDOWN */}
                     <div className="role-select-wrapper">
@@ -275,13 +285,34 @@ const handleRoleChange = async (userId, newRole) => {
                     </button>
                   </>
                 ) : (
-                  <span className="immutable-label">System Protected</span>
+                  <span className="immutable-label">Your Account</span>
                 )}
               </div>
                   </tr>
                 ))}
               </tbody>
             </table>
+
+            <div className="lb-pagination">
+              <button
+                className="lb-page-btn"
+                disabled={userPage <= 1}
+                onClick={() => setUserPage((p) => Math.max(1, p - 1))}
+              >
+                ← Prev
+              </button>
+              <span className="lb-page-info">
+                Page {stats?.page || userPage} of {stats?.totalPages || 1}
+                {stats?.totalUsers != null && ` · ${stats.totalUsers} users`}
+              </span>
+              <button
+                className="lb-page-btn"
+                disabled={userPage >= (stats?.totalPages || 1)}
+                onClick={() => setUserPage((p) => p + 1)}
+              >
+                Next →
+              </button>
+            </div>
           </div>
         )}
 

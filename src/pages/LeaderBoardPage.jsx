@@ -1,12 +1,8 @@
 import React, { useEffect, useState, useContext, useRef } from 'react';
 import apiClient from '../api/apiService';
-import axios from 'axios'; 
 import { AuthContext } from '../contexts/AuthContext';
 import { Link } from 'react-router-dom'; // Import Link
 import './LeaderBoardPage.css';
-
-// ⚠️ REPLACE WITH YOUR REAL KEY
-const TMDB_API_KEY = "fadad4bcd67791ac88cb9e614c380fd2"; 
 
 const LeaderBoardPage = () => {
   const { user } = useContext(AuthContext); 
@@ -73,8 +69,8 @@ const LeaderBoardPage = () => {
       const lbRes = await apiClient.get(`/leaderboard/movie/${movieEntry._id}`);
       setData(lbRes.data);
 
-      const tmdbRes = await axios.get(
-        `https://api.themoviedb.org/3/movie/${movieEntry._id}?api_key=${TMDB_API_KEY}`
+      const tmdbRes = await apiClient.get(
+        `/movies/details/${movieEntry._id}`
       );
       
       setSelectedMovie({

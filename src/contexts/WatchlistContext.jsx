@@ -1,7 +1,7 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import apiClient from '../api/apiService';
 import { AuthContext } from './AuthContext';
-import { toast } from 'sonner';
+import { toast } from 'react-toastify';
 
 export const WatchlistContext = createContext();
 
@@ -33,9 +33,7 @@ export function WatchlistProvider({ children }) {
     }
     
     if (watchlist.some((m) => String(m.imdbID) === String(movie.imdbID))) {
-      toast("Already in your list", {
-          description: `"${movie.Title}" is already in your watchlist.`,
-      });
+      toast.info(`"${movie.Title}" is already in your watchlist.`);
       return;
     }
 
@@ -48,23 +46,11 @@ export function WatchlistProvider({ children }) {
 
     setWatchlist((prev) => [...prev, optimisticMovie]);
 
-    toast.custom((t) => (
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: '15px',
-        padding: '12px',
-        background: 'rgba(18, 18, 18, 0.95)',
-        backdropFilter: 'blur(12px)',
-        border: '1px solid rgba(241, 196, 15, 0.3)',
-        borderRadius: '12px',
-        boxShadow: '0 8px 30px rgba(0,0,0,0.5)',
-        minWidth: '300px',
-        color: '#fff',
-      }}>
-        <img 
-          src={movie.Poster && movie.Poster !== "N/A" ? movie.Poster : "https://via.placeholder.com/40x60"} 
-          alt="poster" 
+    toast(
+      <div style={{ display: 'flex', alignItems: 'center', gap: '15px', color: '#fff' }}>
+        <img
+          src={movie.Poster && movie.Poster !== "N/A" ? movie.Poster : "https://via.placeholder.com/40x60"}
+          alt="poster"
           style={{ width: '40px', height: '60px', objectFit: 'cover', borderRadius: '6px' }}
         />
         <div style={{ display: 'flex', flexDirection: 'column' }}>
@@ -74,8 +60,9 @@ export function WatchlistProvider({ children }) {
         <div style={{ marginLeft: 'auto', color: '#f1c40f' }}>
           <span className="material-icons" style={{ fontSize: '24px' }}>check_circle</span>
         </div>
-      </div>
-    ), { duration: 3000 });
+      </div>,
+      { autoClose: 3000 },
+    );
 
     try {
       await apiClient.post('/watchlist', optimisticMovie);
@@ -91,10 +78,7 @@ export function WatchlistProvider({ children }) {
 
     setWatchlist((prev) => prev.filter((movie) => String(movie.imdbID) !== String(imdbID)));
     
-    toast("Removed from Watchlist", {
-      icon: '🗑️',
-      style: { background: '#1a1a1a', color: '#fff', border: '1px solid rgba(255,255,255,0.1)' }
-    });
+    toast("Removed from Watchlist", { icon: '🗑️' });
 
     try {
       // UPDATED: Use URL parameter for the delete request

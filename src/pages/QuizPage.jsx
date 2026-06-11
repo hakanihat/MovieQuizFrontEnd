@@ -2,11 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import apiClient from "../api/apiService";
 import { toast } from "react-toastify";
-import axios from "axios";
-import "./QuizPage.css"; 
-
-// ⚠️ REPLACE WITH YOUR REAL KEY
-const TMDB_API_KEY = "fadad4bcd67791ac88cb9e614c380fd2"; 
+import "./QuizPage.css";
 
 function QuizPage() {
   const { imdbID } = useParams();
@@ -35,6 +31,7 @@ function QuizPage() {
   const [showStartModal, setShowStartModal] = useState(false); 
 
   const [selectedChoiceIndex, setSelectedChoiceIndex] = useState(null);
+  const [correctChoiceIndex, setCorrectChoiceIndex] = useState(null);
   const [isAnswerProcessed, setIsAnswerProcessed] = useState(false);
 
   // --- REFS ---
@@ -95,7 +92,7 @@ function QuizPage() {
         setLoading(true);
         const [quizRes, tmdbRes] = await Promise.allSettled([
           apiClient.get(`/quiz/${imdbID}`),
-          axios.get(`https://api.themoviedb.org/3/movie/${imdbID}?api_key=${TMDB_API_KEY}`)
+          apiClient.get(`/movies/details/${imdbID}`)
         ]);
 
         if (tmdbRes.status === "fulfilled" && tmdbRes.value.data) {
@@ -161,24 +158,36 @@ function QuizPage() {
   };
 
   // --- 5. ANSWER HANDLING ---
-  function handleAnswerSelect(choiceIndex) {
-    if (isAnswerProcessed) return; 
-    
+  async function handleAnswerSelect(choiceIndex) {
+    if (isAnswerProcessed) return;
+
     setIsAnswerProcessed(true);
-    pauseStartTimeRef.current = Date.now(); 
+    pauseStartTimeRef.current = Date.now();
 
     setSelectedChoiceIndex(choiceIndex);
 
     const currentQuestion = questions[currentQuestionIndex];
-    
-    // --- UPDATED: Save the TEXT, not the index ---
+
+    // Save the TEXT, not the index
     const selectedText = currentQuestion.choices[choiceIndex];
 
     const newAnswers = [...userAnswers, {
       questionId: currentQuestion._id,
-      selectedAnswer: selectedText // Changed from selectedIndex to selectedAnswer
+      selectedAnswer: selectedText
     }];
     setUserAnswers(newAnswers);
+
+    // Ask the server which choice was correct (answers are no longer sent to the client up front)
+    try {
+      const checkRes = await apiClient.post("/quiz/check", {
+        questionId: currentQuestion._id,
+        selectedAnswer: selectedText,
+      });
+      const correctIdx = currentQuestion.choices.indexOf(checkRes.data.correctAnswer);
+      setCorrectChoiceIndex(correctIdx);
+    } catch (err) {
+      console.error("Answer check failed:", err);
+    }
 
     setTimeout(() => {
       const pauseDuration = Date.now() - pauseStartTimeRef.current;
@@ -187,7 +196,8 @@ function QuizPage() {
       if (currentQuestionIndex < questions.length - 1) {
         setCurrentQuestionIndex((prev) => prev + 1);
         setSelectedChoiceIndex(null);
-        setIsAnswerProcessed(false); 
+        setCorrectChoiceIndex(null);
+        setIsAnswerProcessed(false);
       } else {
         submitQuiz(newAnswers, pauseDuration);
       }
@@ -228,12 +238,12 @@ function QuizPage() {
   }
 
   // --- 7. BUTTON CLASS LOGIC ---
-  const getButtonClass = (index, correctIndex) => {
-    if (!isAnswerProcessed) return "choice-btn"; 
-    
-    if (index === correctIndex) return "choice-btn correct";
-    if (index === selectedChoiceIndex && index !== correctIndex) return "choice-btn wrong";
-    
+  const getButtonClass = (index) => {
+    if (!isAnswerProcessed) return "choice-btn";
+
+    if (index === correctChoiceIndex) return "choice-btn correct";
+    if (index === selectedChoiceIndex && index !== correctChoiceIndex) return "choice-btn wrong";
+
     return "choice-btn dimmed";
   };
 
@@ -352,14 +362,14 @@ function QuizPage() {
         <ul className="choices-list">
           {currentQuestion.choices.map((choice, index) => (
             <li key={index}>
-              <button 
+              <button
                 onClick={() => handleAnswerSelect(index)}
-                disabled={isAnswerProcessed} 
-                className={getButtonClass(index, currentQuestion.correctIndex)}
+                disabled={isAnswerProcessed}
+                className={getButtonClass(index)}
               >
                 {choice}
-                {isAnswerProcessed && index === currentQuestion.correctIndex && <span className="material-icons">check_circle</span>}
-                {isAnswerProcessed && index === selectedChoiceIndex && index !== currentQuestion.correctIndex && <span className="material-icons">cancel</span>}
+                {isAnswerProcessed && index === correctChoiceIndex && <span className="material-icons">check_circle</span>}
+                {isAnswerProcessed && index === selectedChoiceIndex && index !== correctChoiceIndex && <span className="material-icons">cancel</span>}
               </button>
             </li>
           ))}

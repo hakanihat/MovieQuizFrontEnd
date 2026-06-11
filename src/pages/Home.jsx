@@ -4,7 +4,8 @@ import { Link, useNavigate } from "react-router-dom";
 import MovieList from "../components/MovieList";
 import MovieCarouselResponsive from "../components/MovieCarouselResponsive";
 import LoadingSpinner from "../components/LoadingSpinner";
-import { AuthContext } from "../contexts/AuthContext"; 
+import apiClient from "../api/apiService";
+import { AuthContext } from "../contexts/AuthContext";
 import { SearchContext } from "../contexts/SearchContext"; 
 import "./Home.css";
 
@@ -23,7 +24,6 @@ function Home() {
   const [isCategoryLoading, setIsCategoryLoading] = useState(true);
   
   const [showScrollBtn, setShowScrollBtn] = useState(false);
-  const tmdbApiKey = "fadad4bcd67791ac88cb9e614c380fd2"; 
 
   // --- 1. Search Logic ---
   useEffect(() => {
@@ -34,11 +34,11 @@ function Home() {
       }
 
       try {
-        const response = await fetch(
-          `https://api.themoviedb.org/3/search/movie?api_key=${tmdbApiKey}&language=en-US&query=${encodeURIComponent(searchQuery)}&page=1&include_adult=false`
+        const response = await apiClient.get(
+          `/movies/search?q=${encodeURIComponent(searchQuery)}`
         );
-        const data = await response.json();
-        
+        const data = response.data;
+
         if (data.results) {
           setMovies(mapTmdbMovies(data.results));
         }
@@ -52,7 +52,7 @@ function Home() {
     }, 500);
 
     return () => clearTimeout(timeoutId);
-  }, [searchQuery, tmdbApiKey]);
+  }, [searchQuery]);
 
 
   // --- 2. Scroll Logic ---
@@ -80,36 +80,25 @@ function Home() {
     }));
   }
 
-  // --- 3. Fetch Categories ---
+  // --- 3. Fetch Categories (from cached backend proxy) ---
   useEffect(() => {
-    async function fetchTmdbData() {
+    async function fetchCategories() {
       setIsCategoryLoading(true);
       try {
-        const [topRatedRes, nowPlayingRes, popularRes, upcomingRes] = await Promise.all([
-          fetch(`https://api.themoviedb.org/3/movie/top_rated?api_key=${tmdbApiKey}&language=en-US&page=1`),
-          fetch(`https://api.themoviedb.org/3/movie/now_playing?api_key=${tmdbApiKey}&language=en-US&page=1`),
-          fetch(`https://api.themoviedb.org/3/movie/popular?api_key=${tmdbApiKey}&language=en-US&page=1`),
-          fetch(`https://api.themoviedb.org/3/movie/upcoming?api_key=${tmdbApiKey}&language=en-US&page=1`)
-        ]);
-
-        const topRatedData = await topRatedRes.json();
-        const nowPlayingData = await nowPlayingRes.json();
-        const popularData = await popularRes.json();
-        const upcomingData = await upcomingRes.json();
-
-        setTopRated(mapTmdbMovies(topRatedData.results || []));
-        setNowPlaying(mapTmdbMovies(nowPlayingData.results || []));
-        setPopular(mapTmdbMovies(popularData.results || []));
-        setUpcoming(mapTmdbMovies(upcomingData.results || []));
-
+        const res = await apiClient.get('/movies/categories');
+        const { topRated, nowPlaying, popular, upcoming } = res.data;
+        setTopRated(topRated || []);
+        setNowPlaying(nowPlaying || []);
+        setPopular(popular || []);
+        setUpcoming(upcoming || []);
       } catch (error) {
         console.error("Error:", error);
       } finally {
-        setTimeout(() => setIsCategoryLoading(false), 1500);
+        setIsCategoryLoading(false);
       }
     }
-    fetchTmdbData();
-  }, [tmdbApiKey]);
+    fetchCategories();
+  }, []);
 
   if (isCategoryLoading) return <LoadingSpinner />;
 

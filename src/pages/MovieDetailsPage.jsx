@@ -3,7 +3,8 @@ import React, { useEffect, useState, useContext, useRef } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { WatchlistContext } from "../contexts/WatchlistContext";
 import LoadingSpinner from "../components/LoadingSpinner";
-import { toast } from "sonner";
+import apiClient from "../api/apiService";
+import { toast } from "react-toastify";
 import "./MovieDetailsPage.css";
 
 const MovieDetailsPage = () => {
@@ -17,8 +18,6 @@ const MovieDetailsPage = () => {
   // Watchlist Context
   const { watchlist, addMovie, removeMovie } = useContext(WatchlistContext);
   const isInWatchlist = watchlist.some((m) => String(m.imdbID) === String(imdbID));
-
-  const tmdbApiKey = "fadad4bcd67791ac88cb9e614c380fd2"; 
 
   // --- DRAG-TO-SCROLL LOGIC ---
   const sliderRef = useRef(null);
@@ -45,10 +44,8 @@ const MovieDetailsPage = () => {
   useEffect(() => {
     const fetchDetails = async () => {
       try {
-        const response = await fetch(
-          `https://api.themoviedb.org/3/movie/${imdbID}?api_key=${tmdbApiKey}&append_to_response=credits,videos`
-        );
-        const data = await response.json();
+        const response = await apiClient.get(`/movies/details/${imdbID}`);
+        const data = response.data;
         setMovie(data);
 
         // Find Trailer

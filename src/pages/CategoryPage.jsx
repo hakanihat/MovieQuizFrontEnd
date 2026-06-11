@@ -3,6 +3,7 @@ import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import MovieCard from '../components/MovieCard';
 import LoadingSpinner from '../components/LoadingSpinner';
+import apiClient from '../api/apiService';
 import './CategoryPage.css';
 
 const CategoryPage = () => {
@@ -14,8 +15,6 @@ const CategoryPage = () => {
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
-
-  const apiKey = "fadad4bcd67791ac88cb9e614c380fd2"; // Replace with env variable in production
 
   // Map friendly URL param to TMDB API endpoint
   const endpointMap = {
@@ -71,11 +70,11 @@ const CategoryPage = () => {
       setLoading(true);
       try {
         const apiType = endpointMap[type] || 'popular';
-        
-        const response = await fetch(
-          `https://api.themoviedb.org/3/movie/${apiType}?api_key=${apiKey}&page=${page}`
+
+        const response = await apiClient.get(
+          `/movies/category/${apiType}?page=${page}`
         );
-        const data = await response.json();
+        const data = response.data;
         
         setMovies(prevMovies => {
           const newMovies = data.results || [];
